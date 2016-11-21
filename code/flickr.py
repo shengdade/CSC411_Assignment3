@@ -2,33 +2,35 @@ import numpy as np
 from keras import backend as K
 from keras.preprocessing import image
 
+image_load_size = 224
+
 
 def load_data():
-    X_dirname = '/Users/dadesheng/Workspace/Assignment3/411a3/train'
-    Y_filename = '/Users/dadesheng/Workspace/Assignment3/411a3/train.csv'
+    X_dirname = '../411a3/train'
+    Y_filename = '../411a3/train.csv'
     X_filelist = image.list_pictures(X_dirname)
     Y_list = np.loadtxt(Y_filename, dtype='str', delimiter=',')[1:]
 
-    X_train = np.zeros((6500, 3, 32, 32))
-    X_test = np.zeros((500, 3, 32, 32))
+    X_train = np.zeros((6500, 3, image_load_size, image_load_size))
+    X_test = np.zeros((500, 3, image_load_size, image_load_size))
     y_train = Y_list[:6500, 1].astype('int64').reshape(-1, 1) - 1
     y_test = Y_list[6500:, 1].astype('int64').reshape(-1, 1) - 1
 
     for i in range(6500):
-        img = image.load_img(X_filelist[i], target_size=(32, 32))
+        img = image.load_img(X_filelist[i], target_size=(image_load_size, image_load_size))
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
         X_train[i, :, :, :] = x
-        print('Processed image: ' + X_filelist[i])
+        print('Read image: ' + X_filelist[i])
 
     for i in range(6500, 7000):
-        img = image.load_img(X_filelist[i], target_size=(32, 32))
+        img = image.load_img(X_filelist[i], target_size=(image_load_size, image_load_size))
         x = image.img_to_array(img)
         x = np.expand_dims(x, axis=0)
         x = preprocess_input(x)
         X_test[i - 6500, :, :, :] = x
-        print('Processed image: ' + X_filelist[i])
+        print('Read image: ' + X_filelist[i])
 
     if K.image_dim_ordering() == 'tf':
         X_train = X_train.transpose(0, 2, 3, 1)
@@ -40,6 +42,39 @@ def load_data():
     # print('y_test shape:', y_test.shape)
 
     return (X_train, y_train), (X_test, y_test)
+
+
+def load_val_data():
+    X_dirname = '../411a3/val'
+    X_filelist = image.list_pictures(X_dirname)
+    val_samples = len(X_filelist)
+    X_val = np.zeros((val_samples, 3, image_load_size, image_load_size))
+
+    for i in range(val_samples):
+        img = image.load_img(X_filelist[i], target_size=(image_load_size, image_load_size))
+        x = image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = preprocess_input(x)
+        X_val[i, :, :, :] = x
+        print('Predict image: ' + X_filelist[i])
+
+    if K.image_dim_ordering() == 'tf':
+        X_val = X_val.transpose(0, 2, 3, 1)
+
+    # print('X_val shape:', X_val.shape)
+
+    return X_val
+
+
+def save_prediction(prediction):
+    out = '../411a3/submission.csv'
+    nb_val = 2970
+    prediction += 1  # Class labels start at 1
+    prediction_column = np.append(prediction, np.zeros(nb_val - prediction.size)).reshape(-1, 1)
+    id_column = np.arange(nb_val).reshape(-1, 1) + 1
+    result = np.concatenate((id_column, prediction_column), axis=1)
+    np.savetxt(out, result, fmt='%d', delimiter=',', header='Id,Prediction', comments='')
+    print('Prediction file written: ' + out)
 
 
 def preprocess_input(x, dim_ordering='default'):
