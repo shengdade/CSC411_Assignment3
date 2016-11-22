@@ -1,8 +1,11 @@
 import numpy as np
 from keras import backend as K
 from keras.preprocessing import image
+import scipy.io
+import glob
 
 image_load_size = 224
+gist_size = 512
 
 
 def load_data():
@@ -60,6 +63,51 @@ def load_val_data():
 
     if K.image_dim_ordering() == 'tf':
         X_val = X_val.transpose(0, 2, 3, 1)
+
+    # print('X_val shape:', X_val.shape)
+
+    return X_val
+
+
+def load_gist():
+    X_dirname = '../411a3/train_gist/*.mat'
+    Y_filename = '../411a3/train.csv'
+    X_filelist = glob.glob(X_dirname)
+    Y_list = np.loadtxt(Y_filename, dtype='str', delimiter=',')[1:]
+
+    X_train = np.zeros((6500, gist_size))
+    X_test = np.zeros((500, gist_size))
+    y_train = Y_list[:6500, 1].astype('int64').reshape(-1, 1) - 1
+    y_test = Y_list[6500:, 1].astype('int64').reshape(-1, 1) - 1
+
+    for i in range(6500):
+        x = scipy.io.loadmat(X_filelist[i])['gist1']
+        X_train[i, :] = x
+        print('Read gist: ' + X_filelist[i])
+
+    for i in range(6500, 7000):
+        x = scipy.io.loadmat(X_filelist[i])['gist1']
+        X_test[i - 6500, :] = x
+        print('Read gist: ' + X_filelist[i])
+
+    # print('X_train shape:', X_train.shape)
+    # print('X_test shape:', X_test.shape)
+    # print('y_train shape:', y_train.shape)
+    # print('y_test shape:', y_test.shape)
+
+    return (X_train, y_train), (X_test, y_test)
+
+
+def load_val_gist():
+    X_dirname = '../411a3/val_gist/*.mat'
+    X_filelist = glob.glob(X_dirname)
+    val_samples = len(X_filelist)
+    X_val = np.zeros((val_samples, gist_size))
+
+    for i in range(val_samples):
+        x = scipy.io.loadmat(X_filelist[i])['gist1']
+        X_val[i, :] = x
+        print('Predict gist: ' + X_filelist[i])
 
     # print('X_val shape:', X_val.shape)
 
