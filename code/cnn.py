@@ -1,9 +1,10 @@
 from __future__ import division
 from __future__ import print_function
 from conv2d import conv2d as Conv2D
-from nn import Affine, ReLU, AffineBackward, ReLUBackward, CheckGrad, Train
+from nn import Affine, ReLU, AffineBackward, ReLUBackward, CheckGrad, Softmax, Train
 import numpy as np
 from nn import save_figure
+from flickr import load_val_gist, save_prediction
 
 
 def InitCNN(num_channels, filter_size, num_filters_1, num_filters_2,
@@ -266,6 +267,11 @@ def main():
 
     # Uncomment if you wish to save the training statistics.
     # Save(stats_fname, stats)
+
+    x = load_val_gist()
+    var = CNNForward(model, x)
+    prediction = np.argmax(Softmax(var['y']), axis=1)
+    save_prediction(prediction)
 
 
 if __name__ == '__main__':

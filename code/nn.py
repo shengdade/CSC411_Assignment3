@@ -2,7 +2,7 @@ from __future__ import division
 from __future__ import print_function
 from util import DisplayPlot
 import numpy as np
-from flickr import load_gist
+from flickr import load_gist, load_val_gist, save_prediction
 import matplotlib.pyplot as plt
 from keras.utils import np_utils
 
@@ -268,8 +268,8 @@ def Train(model, forward, backward, update, eps, momentum, num_epochs,
         train_acc_list.append((epoch, train_acc))
         valid_ce_list.append((epoch, valid_ce))
         valid_acc_list.append((epoch, valid_acc))
-        DisplayPlot(train_ce_list, valid_ce_list, 'Cross Entropy', number=0)
-        DisplayPlot(train_acc_list, valid_acc_list, 'Accuracy', number=1)
+        # DisplayPlot(train_ce_list, valid_ce_list, 'Cross Entropy', number=0)
+        # DisplayPlot(train_acc_list, valid_acc_list, 'Accuracy', number=1)
 
     print()
     train_ce, train_acc = Evaluate(inputs_train, target_train, model, forward, batch_size=batch_size)
@@ -407,6 +407,11 @@ def main():
 
     # Uncomment if you wish to save the training statistics.
     # Save(stats_fname, stats)
+
+    x = load_val_gist()
+    var = NNForward(model, x)
+    prediction = np.argmax(Softmax(var['y']), axis=1)
+    save_prediction(prediction)
 
 
 if __name__ == '__main__':
