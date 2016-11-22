@@ -5,7 +5,7 @@ import scipy.io
 import glob
 
 image_load_size = 224
-gist_size = 512
+gist_size = 1024
 
 
 def load_data():
@@ -115,7 +115,7 @@ def load_val_gist():
 
 
 def save_prediction(prediction):
-    out = '../411a3/submission.csv'
+    out = 'result/submission.csv'
     nb_val = 2970
     prediction += 1  # Class labels start at 1
     prediction_column = np.append(prediction, np.zeros(nb_val - prediction.size)).reshape(-1, 1)
