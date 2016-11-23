@@ -5,7 +5,7 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
-from flickr import load_data, load_val_data, save_prediction
+from flickr import load_image, load_val_image, save_prediction
 
 batch_size = 32
 nb_classes = 8
@@ -18,7 +18,7 @@ img_rows, img_cols = 128, 128
 img_channels = 3
 
 # the data, shuffled and split between train and test sets
-(X_train, y_train), (X_test, y_test) = load_data()
+(X_train, y_train), (X_test, y_test) = load_image()
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
 print(X_test.shape[0], 'test samples')
@@ -96,6 +96,6 @@ else:
 
     # Epoch 85/200 - 39s - loss: 1.0154 - acc: 0.6095 - val_loss: 1.3711 - val_acc: 0.5000
 
-X_val = load_val_data()
+X_val = load_val_image()
 prediction = model.predict_classes(X_val)
 save_prediction(prediction)

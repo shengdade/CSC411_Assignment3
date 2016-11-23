@@ -8,7 +8,7 @@ image_load_size = 224
 gist_size = 1024
 
 
-def load_data():
+def load_image():
     X_dirname = '../411a3/train'
     Y_filename = '../411a3/train.csv'
     X_filelist = image.list_pictures(X_dirname)
@@ -47,7 +47,7 @@ def load_data():
     return (X_train, y_train), (X_test, y_test)
 
 
-def load_val_data():
+def load_val_image():
     X_dirname = '../411a3/val'
     X_filelist = image.list_pictures(X_dirname)
     val_samples = len(X_filelist)
