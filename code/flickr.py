@@ -3,6 +3,7 @@ from keras import backend as K
 from keras.preprocessing import image
 import scipy.io
 import glob
+from util import Load
 
 image_load_size = 224
 gist_size = 1024
@@ -111,6 +112,28 @@ def load_val_gist():
 
     # print('X_val shape:', X_val.shape)
 
+    return X_val
+
+
+def load_data():
+    nb_test = 350
+    train_file = '../411a3/train.npz'
+    train = Load(train_file)
+    X_train = train['X_train']
+    y_train = train['y_train']
+    rnd_idx = np.arange(X_train.shape[0])
+    np.random.shuffle(rnd_idx)
+    X_train = X_train[rnd_idx]
+    y_train = y_train[rnd_idx]
+    X_train = X_train.reshape((-1, 1, 32, 30))
+    return (X_train[nb_test:], y_train[nb_test:]), (X_train[:nb_test], y_train[:nb_test])
+
+
+def load_val_data():
+    val_file = '../411a3/val.npz'
+    val = Load(val_file)
+    X_val = val['X_val']
+    X_val = X_val.reshape((-1, 1, 32, 30))
     return X_val
 
 
