@@ -4,7 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from keras.preprocessing import image
 from PIL import Image
-import leargist
+# In order to run the script on ECE hosts, the following is disabled.
+# import leargist
 
 plt.ion()
 gist_size = 960
