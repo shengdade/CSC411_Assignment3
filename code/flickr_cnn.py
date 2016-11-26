@@ -6,11 +6,12 @@ from keras.layers import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD
 from keras.utils import np_utils
 from flickr import load_data, load_val_data, save_prediction
+from aug import load_aug_data
 
-batch_size = 32
+batch_size = 512
 nb_classes = 8
 nb_epoch = 200
-data_augmentation = True
+data_augmentation = False
 
 # input image dimensions
 img_rows, img_cols = 128, 128
@@ -18,7 +19,7 @@ img_rows, img_cols = 128, 128
 img_channels = 3
 
 # the data, shuffled and split between train and test sets
-(X_train, y_train), (X_test, y_test) = load_data()
+(X_train, y_train), (X_test, y_test) = load_aug_data()
 print('X_train shape:', X_train.shape)
 print(X_train.shape[0], 'train samples')
 print(X_test.shape[0], 'test samples')
