@@ -6,4 +6,7 @@ __pycache__/
 .idea/
 #.gitignore#
 .DS_Store
-411a3/submission.csv
+code/result/submission.csv
+411a3/data/
+411a3/data_classify/
+411a3/train_aug.npz
