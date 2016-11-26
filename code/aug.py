@@ -2,8 +2,9 @@ import numpy as np
 from keras import backend as K
 from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img, list_pictures
 from PIL import Image
-import leargist
 from util import Save, Load
+# In order to run the script on ECE hosts, the following is disabled.
+# import leargist
 
 image_size = 128
 image_channel = 3
