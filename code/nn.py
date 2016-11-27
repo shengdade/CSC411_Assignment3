@@ -5,6 +5,7 @@ import numpy as np
 from flickr import load_gist, load_val_gist, save_prediction
 import matplotlib.pyplot as plt
 from keras.utils import np_utils
+from aug import load_aug_data
 
 
 def InitNN(num_inputs, num_hiddens, num_outputs):
@@ -208,7 +209,10 @@ def Train(model, forward, backward, update, eps, momentum, num_epochs,
             - train_acc:      Training accuracy.
             - valid_acc:      Validation accuracy.
     """
-    (inputs_train, target_train), (inputs_valid, target_valid) = load_gist()
+    (inputs_train, target_train), (inputs_valid, target_valid) = load_aug_data()
+
+    inputs_train = inputs_train.reshape((inputs_train.shape[0], 960))
+    inputs_valid = inputs_valid.reshape((inputs_valid.shape[0], 960))
 
     # convert class vectors to binary class matrices
     target_train = np_utils.to_categorical(target_train, 8)
@@ -268,8 +272,8 @@ def Train(model, forward, backward, update, eps, momentum, num_epochs,
         train_acc_list.append((epoch, train_acc))
         valid_ce_list.append((epoch, valid_ce))
         valid_acc_list.append((epoch, valid_acc))
-        # DisplayPlot(train_ce_list, valid_ce_list, 'Cross Entropy', number=0)
-        # DisplayPlot(train_acc_list, valid_acc_list, 'Accuracy', number=1)
+        DisplayPlot(train_ce_list, valid_ce_list, 'Cross Entropy', number=0)
+        DisplayPlot(train_acc_list, valid_acc_list, 'Accuracy', number=1)
 
     print()
     train_ce, train_acc = Evaluate(inputs_train, target_train, model, forward, batch_size=batch_size)
@@ -372,7 +376,7 @@ def main():
     batch_size = 100
 
     # Input-output dimensions.
-    num_inputs = 1024
+    num_inputs = 960
     num_outputs = 8
 
     # Initialize model.
@@ -383,7 +387,7 @@ def main():
 
     # Check gradient implementation.
     print('Checking gradients...')
-    x = np.random.rand(10, 32 * 32) * 0.1
+    x = np.random.rand(10, 32 * 30) * 0.1
     CheckGrad(model, NNForward, NNBackward, 'W3', x)
     CheckGrad(model, NNForward, NNBackward, 'b3', x)
     CheckGrad(model, NNForward, NNBackward, 'W2', x)
