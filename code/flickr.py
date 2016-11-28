@@ -115,6 +115,18 @@ def load_val_gist():
     return X_val
 
 
+def get_class_weight(y):
+    class_weight = {}
+    t = y.reshape(-1)
+    occurrence = np.bincount(t)
+    weight = 1.0 / occurrence
+    weight /= sum(weight)
+    for i in range(8):
+        class_weight[i] = weight[i]
+    print class_weight
+    return class_weight
+
+
 def load_data():
     nb_test = 350
     train_file = '../411a3/train.npz'
