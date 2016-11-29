@@ -12,13 +12,14 @@ from keras.preprocessing.image import ImageDataGenerator
 from flickr import load_val_data, save_prediction
 from keras.utils import np_utils
 from util import Load, Save
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 target_size = (224, 224)
 train_size = 7000
 
 batch_size = 32
 nb_classes = 8
-nb_epoch = 200
+nb_epoch = 40
 data_augmentation = False
 
 
@@ -106,13 +107,18 @@ def main():
     X_train /= 255
     X_test /= 255
 
+    file_path = "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+    checkpoint = ModelCheckpoint(file_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=5, verbose=1, mode='auto')
+
     if not data_augmentation:
         print('Not using data augmentation.')
         model.fit(X_train, Y_train,
                   batch_size=batch_size,
                   nb_epoch=nb_epoch,
                   validation_split=0.1,
-                  shuffle=True)
+                  shuffle=True,
+                  callbacks=[checkpoint, early_stopping])
     else:
         print('Using real-time data augmentation.')
 
@@ -137,7 +143,8 @@ def main():
         model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size),
                             samples_per_epoch=X_train.shape[0],
                             nb_epoch=nb_epoch,
-                            validation_data=(X_test, Y_test))
+                            validation_data=(X_test, Y_test),
+                            callbacks=[checkpoint, early_stopping])
 
     X_val = load_val_data()
     prediction = model.predict_classes(X_val)
