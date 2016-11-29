@@ -13,3 +13,5 @@ code/result/submission.csv
 411a3/train_vgg16.npz
 411a3/train_vgg16_val.npz
 *.hdf5
+411a3/train_vgg19.npz
+411a3/train_vgg19_val.npz
