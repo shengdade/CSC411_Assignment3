@@ -1,6 +1,3 @@
-import sys
-
-sys.path.append('..')
 from vgg16 import VGG16
 from keras.preprocessing import image
 from imagenet_utils import preprocess_input
@@ -9,18 +6,29 @@ from keras.models import Sequential
 from keras.layers import Dense, Flatten
 from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
-from flickr import load_val_data, save_prediction
 from keras.utils import np_utils
-from util import Load, Save
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 target_size = (224, 224)
 train_size = 7000
+val_size = 970
 
 batch_size = 32
 nb_classes = 8
 nb_epoch = 40
 data_augmentation = False
+
+
+def Save(fname, data):
+    """Saves data to a numpy file."""
+    print('Writing to ' + fname)
+    np.savez_compressed(fname, **data)
+
+
+def Load(fname):
+    """Loads data from numpy file."""
+    print('Loading from ' + fname)
+    return dict(np.load(fname))
 
 
 def extract_vgg16():
@@ -53,6 +61,27 @@ def extract_vgg16():
     return X_train, y_train
 
 
+def extract_vgg16_val():
+    model = VGG16(weights='imagenet', include_top=False)
+    print(model.summary())
+
+    X_dirname = '../../411a3/val'
+    X_filelist = image.list_pictures(X_dirname)
+
+    X_vgg_val = np.zeros((val_size, 512, 7, 7))
+
+    for i in range(val_size):
+        img = image.load_img(X_filelist[i], target_size=target_size)
+        x = image.img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        x = preprocess_input(x)
+        vgg16 = model.predict(x)
+        X_vgg_val[i, :, :, :] = vgg16
+        print('Read image: ' + X_filelist[i])
+
+    return X_vgg_val
+
+
 def save_vgg16(save_path='../../411a3/train_vgg16.npz'):
     X_train, y_train = extract_vgg16()
     train = {
@@ -61,6 +90,15 @@ def save_vgg16(save_path='../../411a3/train_vgg16.npz'):
     }
     Save(save_path, train)
     print('Train data saved to: ' + save_path)
+
+
+def save_vgg16_val(save_path='../../411a3/train_vgg16_val.npz'):
+    X_val = extract_vgg16_val()
+    val = {
+        'X_val': X_val
+    }
+    Save(save_path, val)
+    print('Val data saved to: ' + save_path)
 
 
 def load_vgg16(nb_test=0, load_path='../../411a3/train_vgg16.npz'):
@@ -77,6 +115,46 @@ def load_vgg16(nb_test=0, load_path='../../411a3/train_vgg16.npz'):
     return (X_train[nb_test:], y_train[nb_test:]), (X_train[:nb_test], y_train[:nb_test])
 
 
+def load_vgg16_val(load_path='../../411a3/train_vgg16_val.npz'):
+    val = Load(load_path)
+    X_val = val['X_val']
+
+    return X_val
+
+
+def save_prediction(prediction):
+    out = '../result/submission.csv'
+    nb_val = 2970
+    prediction += 1  # Class labels start at 1
+    prediction_column = np.append(prediction, np.zeros(nb_val - prediction.size)).reshape(-1, 1)
+    id_column = np.arange(nb_val).reshape(-1, 1) + 1
+    result = np.concatenate((id_column, prediction_column), axis=1)
+    np.savetxt(out, result, fmt='%d', delimiter=',', header='Id,Prediction', comments='')
+    print('Prediction file written: ' + out)
+
+
+def create_model(input_shape):
+    model = Sequential()
+    model.add(Flatten(name='flatten', input_shape=input_shape))
+    model.add(Dense(4096, activation='relu', name='fc1'))
+    model.add(Dense(4096, activation='relu', name='fc2'))
+    model.add(Dense(8, activation='softmax', name='predictions'))
+    return model
+
+
+def load_model_predict(weights_file):
+    X_val = load_vgg16_val()
+    model = create_model(X_val.shape[1:])
+    model.load_weights(weights_file)
+    sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy',
+                  optimizer=sgd,
+                  metrics=['accuracy'])
+    print("Created model and loaded weights from file")
+    prediction = model.predict_classes(X_val)
+    save_prediction(prediction)
+
+
 def main():
     # the data, shuffled and split between train and test sets
     (X_train, y_train), (X_test, y_test) = load_vgg16()
@@ -88,12 +166,7 @@ def main():
     Y_train = np_utils.to_categorical(y_train, nb_classes)
     Y_test = np_utils.to_categorical(y_test, nb_classes)
 
-    model = Sequential()
-    model.add(Flatten(name='flatten', input_shape=X_train.shape[1:]))
-    model.add(Dense(4096, activation='relu', name='fc1'))
-    model.add(Dense(4096, activation='relu', name='fc2'))
-    model.add(Dense(8, activation='softmax', name='predictions'))
-
+    model = create_model(X_train.shape[1:])
     print(model.summary())
 
     # let's train the model using SGD + momentum (how original).
@@ -146,10 +219,10 @@ def main():
                             validation_data=(X_test, Y_test),
                             callbacks=[checkpoint, early_stopping])
 
-    X_val = load_val_data()
+    X_val = load_vgg16_val()
     prediction = model.predict_classes(X_val)
     save_prediction(prediction)
 
 
 if __name__ == '__main__':
-    main()
+    load_model_predict('weights-improvement-14-0.76.hdf5')
