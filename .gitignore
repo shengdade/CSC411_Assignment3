@@ -19,3 +19,7 @@ train_vgg16_128.npz
 train_vgg16_val_128.npz
 411a3/train_vgg16_aug_train.npz
 411a3/train_vgg16_aug_validation.npz
+411a3/test/
+411a3/train_resnet.npz
+411a3/train_resnet_test.npz
+411a3/train_resnet_val.npz
