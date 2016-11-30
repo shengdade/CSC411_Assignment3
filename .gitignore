@@ -17,3 +17,5 @@ code/result/submission.csv
 411a3/train_vgg19_val.npz
 train_vgg16_128.npz
 train_vgg16_val_128.npz
+411a3/train_vgg16_aug_train.npz
+411a3/train_vgg16_aug_validation.npz
