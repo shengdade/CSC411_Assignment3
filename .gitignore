@@ -26,3 +26,4 @@ train_vgg16_val_128.npz
 411a3/train_inception.npz
 411a3/train_inception_test.npz
 411a3/train_inception_val.npz
+411a3/train_vgg16_test.npz
